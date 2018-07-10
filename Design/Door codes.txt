@@ -1,0 +1,9 @@
+have doors open by 3 digit binary codes
+
+001 Door #1
+010 Door #2
+011 Door #3
+100 Door #4
+101 Door #5
+110 Door #6
+111 Door #7
