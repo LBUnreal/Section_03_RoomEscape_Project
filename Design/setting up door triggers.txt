@@ -1,0 +1,55 @@
+Attach new c++ component to door
+
+
+
+include what you use (in OpenDoor.h)
+#include "GameFramework/Actor.h"
+#include "Engine/TriggerVolume.h"
+
+Set up door rotation in BeginPlay (in OpenDoor.cpp)
+
+	// Get the owning Actor
+	AActor* Owner = GetOwner();
+
+	//Create a rotator
+	FRotator NewRotation = FRotator(0.0f, 0.0f, 0.0f);
+
+	//Set the door rotation
+	Owner->SetActorRotation(NewRotation);
+
+use UPROPERTY to expose a rotation angle (in OpenDoor.h)
+	UPROPERTY(VisibleAnywhere)
+		float OpenAngle = 90.0f; 
+
+use UPROPERTY to expose a TriggerVolume variable to attach to door (in OpenDoor.h)
+	UPROPERTY(EditAnywhere)
+		ATriggerVolume* PressurePlate;
+
+use UPROPERTY to add an Actor that will be used to trigger the door (in OpenDoor.h)
+	UPROPERTY(EditAnywhere)
+	AActor* ActorThatOpens
+
+Note: for now, we are using polling
+	if (PressurePlate && PressurePlate->IsOverlappingActor(ActorThatOpens))
+	{
+		//If the actor that opens is in the volume
+		OpenDoor();
+	}
+
+Code gets moved to tick component in its own function:
+void UOpenDoor::OpenDoor()
+{
+	// Get the owning Actor
+	AActor* Owner = GetOwner();
+
+	//Create a rotator
+	FRotator NewRotation = FRotator(0.0f, 0.0f, 0.0f);
+
+	//Set the door rotation
+	Owner->SetActorRotation(NewRotation);
+}
+
+Now need to hook up the trigger volume and the actor to the open door component
+
+The actor that opens can be found by using a top down approach in beginPlay (OpenDoor.h)
+	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
