@@ -34,29 +34,54 @@ void UOpenDoor::SetUpDoorActors()
 
 void UOpenDoor::PollTriggerVolume()
 {
-	//If the ActorThatOpens is in the Volume
-	if (GetTotalMassOfActorsOnPlate() > TriggerMass) 
+	bool bDoorResult = false;
+
+	//If any pressure plates are enabled
+	if (EnabledPressurePlates)
 	{
-		OnOpen.Broadcast();
+		bool bEnabledPlates[] = { true, true, true };
+		bool bDisabledPlates[] = { true, true, true };
+
+		for (int index = 0; index < 3; index++)
+		{
+			if (EnabledPressurePlates[index])
+			{
+				bEnabledPlates[index] = IsWithinTotalMassofActorsOnPlate(EnabledPressurePlates[index]);
+			}
+
+			if (DisabledPressurePlates[index])
+			{
+				bDisabledPlates[index] = !IsWithinTotalMassofActorsOnPlate(DisabledPressurePlates[index]);
+			}
+
+		}
+
+		//If the ActorThatOpens is in the Volume
+		if (bEnabledPlates[0] && bEnabledPlates[1] && bEnabledPlates[2] &&
+			bDisabledPlates[0] && bDisabledPlates[1] && bDisabledPlates[2])
+		{
+			OnOpen.Broadcast();
+		}
+		else
+		{
+			OnClose.Broadcast();
+		}
 	}
-	else
-	{
-		OnClose.Broadcast();
-	}
+
 }
 
-float UOpenDoor::GetTotalMassOfActorsOnPlate()
+float UOpenDoor::GetTotalMassOfActorsOnPlate(ATriggerVolume* _PressurePlate)
 {
 	float TotalMass = 0.0f;
 
-	if (!PressurePlate)
+	if (!_PressurePlate)
 	{
 		return TotalMass;
 	}
 
 	//Find all the overlapping actors
 	TArray<AActor*> OverlappingActors;
-	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+	_PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
 	// Iterate through them adding their Masses
 	for (const auto* OActor : OverlappingActors)
@@ -69,5 +94,19 @@ float UOpenDoor::GetTotalMassOfActorsOnPlate()
 	}
 
 	return TotalMass;
+}
+
+bool UOpenDoor::IsWithinTotalMassofActorsOnPlate(ATriggerVolume * _PressurePlate)
+{
+	float TotalMass = GetTotalMassOfActorsOnPlate(_PressurePlate);
+
+	bool Result = (TotalMass > 0 && TotalMass <= TriggerMass);
+
+	UE_LOG(LogTemp, Warning, 
+		TEXT("Pressure plate: %s, result: %s"), 
+		*(_PressurePlate->GetFName().ToString()), 
+		Result ? TEXT("True") :TEXT("False"));
+
+	return (Result);
 }
 

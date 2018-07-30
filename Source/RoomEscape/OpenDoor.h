@@ -37,17 +37,20 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-private:
+private:	
 	UPROPERTY(EditAnywhere)
-		ATriggerVolume* PressurePlate = nullptr;
+		ATriggerVolume* EnabledPressurePlates[3]; //Pressure plates that need to be on for the door to open
 
 	UPROPERTY(EditAnywhere)
-	float TriggerMass = 40.0f;
+		ATriggerVolume* DisabledPressurePlates[3]; //Pressure plates that need to be off for the door to open
+
+	UPROPERTY(EditAnywhere)
+		float TriggerMass = 5.0f;
 
 	AActor* Owner = nullptr; //Owning Door
 
 	void SetUpDoorActors();
 	void PollTriggerVolume();
-	float GetTotalMassOfActorsOnPlate();
-
+	float GetTotalMassOfActorsOnPlate(ATriggerVolume* _PressurePlate);
+	bool IsWithinTotalMassofActorsOnPlate(ATriggerVolume* _PressurePlate);
 };
